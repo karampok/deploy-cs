@@ -1,0 +1,165 @@
+#!/usr/bin/env bash
+##
+## /usr/local/bin/destroy
+## (c) SwissTXT rene.moser@swisstxt.ch
+
+set -x
+
+###### arguments
+
+# e.g. name-bie-01
+node="$1"
+
+# e.g. deploy or destroy 
+# ln -s /usr/local/bin/deploy /usr/local/bin/destroy
+action="$0" 
+
+#######  defaults
+
+cs_project=STXT_INTEGRATION
+cs_iso=CentOS-6.4-x86_64-swisstxt-v20
+cs_env=stxt_int
+
+###### functions
+
+print_error_and_die() {
+  echo "fatal: $1." >&2
+  exit 1
+}
+
+check_exit_status() {
+  if [ $? -ne 0 ]; then
+    print_error_and_die "$1, exiting..."
+  fi
+}
+
+node_exists() {
+  return $(cs server list -e $cs_env --project $cs_project | grep -q $node)
+}
+
+has_action() {
+  actions="destroy deploy"
+  for item in $actions; do
+    [[ "$item" = "$1" ]] && return 0
+  done
+  return 1
+}
+
+check_running() {
+  check_limit=200
+  check_sleep_seconds=30
+
+  while ! nc -z -w 2 $node 22
+  do 
+    if [ "$limit" -lt 1 ]; then
+      print_error_and_die "node $node was not running after $check_limit * $check_sleep_seconds, stopping"
+    fi
+    
+    echo -n . 
+    sleep $check_sleep_seconds
+    let check_limit-=1
+  done
+  
+  sleep 60
+}
+
+###### actions
+
+action_deploy_bie() {
+  cs_zone="BIEL_CU01"
+  
+  if node_exists
+  then
+    echo "$node exists, continuing without creating."
+    exit 0
+  fi
+
+  cs server create $node \
+  --zone $cs_zone \
+  --project $cs_project \
+  --iso $cs_iso \
+  --offering "2cpu_2gb" \
+  --disk_offering "Perf MPC"  \
+  --disk_size 20 \
+  --networks "Server BIE STXT Integration" "Storage BIE STXT Integration" "Sync BIE STXT_Integration" \
+  --environment $cs_env \
+  --keypair jenkins
+
+  check_exit_status
+  check_running
+}
+
+action_deploy_zrh() {
+  cs_zone="ZUERICH_IX"
+
+  if node_exists
+  then
+    echo "$node exists, continuing without creating."
+    exit 0
+  fi
+  
+  cs server create $node \
+  --zone $cs_zone \
+  --project $cs_project \
+  --iso $cs_iso \
+  --offering "2cpu_2gb" \
+  --disk_offering "Perf MPC"  \
+  --disk_size 20 \
+  --networks "Server ZRH STXT Integration" "Storage ZRH STXT_Integration" "Sync ZRH STXT_Integration" \
+  --environment $cs_env \
+  --keypair jenkins
+  
+  check_exit_status
+  check_running
+}
+
+action_destroy_bie() {
+  if ! node_exists
+  then
+    echo "$node does not exist, continuing without destroying."
+    exit 0
+  fi
+  cs server destroy --project $cs_project -e $cs_env $node -f
+  check_exit_status
+}
+
+action_destroy_zrh() {
+  if ! node_exists
+  then
+    echo "$node does not exist, continuing without destroying."
+    exit 0
+  fi
+  cs server destroy --project $cs_project -e $cs_env $node -f
+  check_exit_status
+}
+
+###### checks
+
+[ -z "$node" ] && print_error_and_die "node undefined"
+
+hash nc 2>/dev/null || print_error_and_die "command nc not found"
+hash cs 2>/dev/null || print_error_and_die "command cs not found"
+
+if ! has_action "$action"
+then
+  print_error_and_die "unknown action: $action"
+fi
+
+###### main
+
+# bie or zrh
+zone="$(echo $node | cut -d '-' -f2)"
+
+case "$zone" in
+  bie)
+    action_${action}_bie
+  ;;
+
+  zrh)
+    action_${action}_zrh
+  ;;
+  
+  *)
+    print_error_and_die "unknown zone $zone"
+  ;;
+esac
