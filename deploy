@@ -12,7 +12,7 @@ node="$1"
 
 # e.g. deploy or destroy 
 # ln -s /usr/local/bin/deploy /usr/local/bin/destroy
-action="$0" 
+action="$(basename $0)" 
 
 #######  defaults
 
