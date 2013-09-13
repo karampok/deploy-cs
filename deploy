@@ -51,7 +51,7 @@ check_running() {
 
   while ! nc -z -w 2 $node 22
   do 
-    if [ "$limit" -lt 1 ]; then
+    if [ "$limit" -lt "1" ]; then
       print_error_and_die "node $node was not running after $check_limit * $check_sleep_seconds, stopping"
     fi
     
