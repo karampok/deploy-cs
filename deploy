@@ -48,11 +48,12 @@ has_action() {
 check_running() {
   check_limit=200
   check_sleep_seconds=30
+  total_time=$(expr 200 \* 30 / 60)
 
   while ! nc -z -w 2 $node 22
   do 
     if [ "$check_limit" -lt "1" ]; then
-      print_error_and_die "node $node was not running after $check_limit * $check_sleep_seconds, stopping"
+      print_error_and_die "node $node was not running after $total_time minutes, stopping"
     fi
     
     echo -n . 
