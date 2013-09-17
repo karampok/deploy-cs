@@ -37,6 +37,11 @@ node_exists() {
   return $(cs server list -e $cs_env --project $cs_project | grep -q $node)
 }
 
+node_has_state() {
+  state = $1
+  return $(cs server list -e stxt_int --project STXT_INTEGRATION | grep $node  | awk '{print $2}') | grep -q -i $state)
+}
+
 has_action() {
   actions="destroy deploy"
   for item in $actions; do
@@ -115,7 +120,7 @@ action_deploy_zrh() {
 }
 
 action_destroy_bie() {
-  if ! node_exists
+  if ! node_exists || ! node_has_state "running"
   then
     echo "$node does not exist, continuing without destroying."
     exit 0
@@ -125,7 +130,7 @@ action_destroy_bie() {
 }
 
 action_destroy_zrh() {
-  if ! node_exists
+  if ! node_exists || ! node_has_state "running"
   then
     echo "$node does not exist, continuing without destroying."
     exit 0
