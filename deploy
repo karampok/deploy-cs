@@ -39,7 +39,7 @@ node_exists() {
 
 node_has_state() {
   state = $1
-  return $(cs server list -e stxt_int --project STXT_INTEGRATION | grep $node  | awk '{print $2}') | grep -q -i $state)
+  return $(cs server list -e stxt_int --project STXT_INTEGRATION | grep $node  | awk '{print $2}' | grep -q -i $state)
 }
 
 has_action() {
