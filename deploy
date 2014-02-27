@@ -69,6 +69,12 @@ check_running() {
   sleep 60
 }
 
+detach_iso() {
+  node="$1"
+  cs_project="$2"
+  cs command detachIso virtualmachineid=$(cs server show $node --project $cs_project | grep '^id:' | awk '{print $2}')
+}
+
 ###### actions
 
 action_deploy_bie() {
@@ -92,6 +98,7 @@ action_deploy_bie() {
   --keypair jenkins
 
   check_exit_status
+  detach_iso $node $cs_project
   check_running
 }
 
@@ -116,6 +123,7 @@ action_deploy_zrh() {
   --keypair jenkins
   
   check_exit_status
+  detach_iso $node $cs_project
   check_running
 }
 
@@ -125,6 +133,7 @@ action_destroy_bie() {
     echo "$node does not exist, continuing without destroying."
     exit 0
   fi
+  detach_iso $node $cs_project
   cs server destroy --project $cs_project -e $cs_env $node -f
   check_exit_status
 }
@@ -135,6 +144,7 @@ action_destroy_zrh() {
     echo "$node does not exist, continuing without destroying."
     exit 0
   fi
+  detach_iso $node $cs_project
   cs server destroy --project $cs_project -e $cs_env $node -f
   check_exit_status
 }
