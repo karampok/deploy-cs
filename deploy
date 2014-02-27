@@ -88,7 +88,7 @@ action_deploy_bie() {
   --disk_offering "Perf MPC"  \
   --disk_size 20 \
   --networks "Server BIE STXT Integration" "Storage BIE STXT Integration" "Sync BIE STXT_Integration" \
-  --environment $cs_env \
+  --env $cs_env \
   --keypair jenkins
 
   check_exit_status
@@ -112,7 +112,7 @@ action_deploy_zrh() {
   --disk_offering "Perf MPC"  \
   --disk_size 20 \
   --networks "Server ZRH STXT Integration" "Storage ZRH STXT_Integration" "Sync ZRH STXT_Integration" \
-  --environment $cs_env \
+  --env $cs_env \
   --keypair jenkins
   
   check_exit_status
