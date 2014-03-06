@@ -98,8 +98,8 @@ action_deploy_bie() {
   --keypair jenkins
 
   check_exit_status
-  detach_iso $node $cs_project
   check_running
+  detach_iso $node $cs_project
 }
 
 action_deploy_zrh() {
@@ -123,8 +123,8 @@ action_deploy_zrh() {
   --keypair jenkins
   
   check_exit_status
-  detach_iso $node $cs_project
   check_running
+  detach_iso $node $cs_project
 }
 
 action_destroy_bie() {
